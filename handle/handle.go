@@ -30,5 +30,6 @@ func AddUserHandler(w http.ResponseWriter, r *http.Request) {
 	user := &entity.User{Name: vars["name"], Pass: vars["pass"]}
 	util.DbConn(user)
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(json.Marshal(entity.Request{200, "ok"}))
+	res, _ := json.Marshal(entity.Request{200, "ok"})
+	w.Write(res)
 }
