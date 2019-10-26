@@ -13,8 +13,22 @@ import (
 const dbUser = "haruhito0823"
 const cluster = "smplcluster-xfhz0.gcp.mongodb.net"
 
-// DbConn DBアクセッサ
-func DbConn(us *entity.User) error {
+// InsertOne 一件追加
+func InsertOne(us *entity.User) error {
+
+	collection := dbConnecton()
+	_, err := collection.InsertOne(context.Background(), us)
+
+	return err
+}
+
+//Select ooo
+func Select() {
+
+}
+
+// dbConnecton DBアクセッサ
+func dbConnecton() *mongo.Collection {
 
 	dburl := fmt.Sprintf("mongodb+srv://dbUser:%s@%s/admin?retryWrites=true&w=majority", dbUser, cluster)
 
@@ -23,12 +37,8 @@ func DbConn(us *entity.User) error {
 		log.Fatal(err)
 	}
 	if err = client.Connect(context.Background()); err != nil {
-		return err
+		return nil
 	}
 	defer client.Disconnect(context.Background())
-
-	collection := client.Database("smpl").Collection("test_curry")
-	_, err = collection.InsertOne(context.Background(), us)
-
-	return err
+	return client.Database("smpl").Collection("test_curry")
 }
