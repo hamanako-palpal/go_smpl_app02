@@ -20,7 +20,6 @@ func RootHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("[golang server] internal server error")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
-
 }
 
 // AddUserHandler ユーザ追加
@@ -28,8 +27,16 @@ func AddUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 	user := &entity.User{Name: vars["name"], Pass: vars["pass"]}
-	util.DbConn(user)
+	er := util.DbConn(user)
+
 	w.Header().Set("Content-Type", "application/json")
-	res, _ := json.Marshal(entity.Request{200, "ok"})
-	w.Write(res)
+	if er != nil {
+		log.Printf("connect-error")
+		log.Fatal(er)
+		res, _ := json.Marshal(entity.Request{Status: 408, Result: "NG"})
+		w.Write(res)
+	} else {
+		res, _ := json.Marshal(entity.Request{Status: 200, Result: "OK"})
+		w.Write(res)
+	}
 }
