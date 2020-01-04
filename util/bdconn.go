@@ -4,16 +4,13 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/hamanako-palpal/go_smpl_app02/entity"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
-
-const dbCd = "mongodb+srv://%s:%s@%s/test?retryWrites=true&w=majority"
-const dbUser = "1385.aso@gmail.com"
-const pass = "haruhito0823"
-const cluster = "smplcluster-xfhz0.gcp.mongodb.net"
 
 // DbConn 一件追加
 func DbConn(us *entity.User) error {
@@ -32,17 +29,25 @@ func Select() {
 // dbConnecton DBアクセッサ
 func dbConnecton() *mongo.Collection {
 
-	url := fmt.Sprintf(dbCd, dbUser, pass, cluster)
-	log.Printf(url)
+	cfg := GetConfig()
 
+	url := fmt.Sprintf(
+		cfg.Db.Address,
+		cfg.Db.User,
+		cfg.Db.Pass,
+		cfg.Db.Cluster)
+
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	client, err := mongo.Connect(
-		context.Background(),
+		ctx,
 		options.Client().ApplyURI(url),
 	)
+	err = client.Ping(ctx, readpref.Primary())
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Couldn't connect to the database", err)
+	} else {
+		log.Println("Connected!")
 	}
 
-	defer client.Disconnect(context.Background())
 	return client.Database("smpl").Collection("test_curry")
 }
